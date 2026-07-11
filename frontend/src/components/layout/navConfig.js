@@ -1,0 +1,98 @@
+import {
+  LayoutDashboard,
+  User,
+  FileText,
+  UploadCloud,
+  Search,
+  ClipboardList,
+  Bell,
+  PlusCircle,
+  Users,
+  CalendarClock,
+  BarChart3,
+  Building2,
+  Settings,
+  Bookmark,
+  MessageSquare,
+  ListChecks,
+  GitCompare,
+  Target,
+  ShieldCheck,
+  FileBarChart,
+  Cog,
+  MessageCircle,
+  HeartPulse,
+  Database,
+} from "lucide-react";
+
+export const NAV_BY_ROLE = {
+  student: [
+    { to: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/student/profile", label: "Profile", icon: User },
+    { to: "/student/resume-builder", label: "Resume Builder", icon: FileText },
+    { to: "/student/resume-upload", label: "Resume Upload", icon: UploadCloud },
+    { to: "/jobs", label: "Browse Jobs", icon: Search },
+    { to: "/student/saved-jobs", label: "Saved Jobs", icon: Bookmark },
+    { to: "/student/applications", label: "Applications", icon: ClipboardList },
+    {
+      to: "/student/interview-schedule",
+      label: "Interviews",
+      icon: CalendarClock,
+    },
+    { to: "/student/notifications", label: "Notifications", icon: Bell },
+    { to: "/messages", label: "Messages", icon: MessageSquare },
+  ],
+  recruiter: [
+    { to: "/recruiter/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    {
+      to: "/recruiter/company-profile",
+      label: "Company Profile",
+      icon: Building2,
+    },
+    { to: "/recruiter/create-job", label: "Post a Job", icon: PlusCircle },
+    { to: "/recruiter/job-management", label: "Manage Jobs", icon: ListChecks },
+    { to: "/recruiter/applicants", label: "Applicants", icon: Users },
+    {
+      to: "/recruiter/candidate-comparison",
+      label: "Compare Candidates",
+      icon: GitCompare,
+    },
+    {
+      to: "/recruiter/matching-dashboard",
+      label: "Matching Dashboard",
+      icon: Target,
+    },
+    {
+      to: "/recruiter/interview-schedule",
+      label: "Interviews",
+      icon: CalendarClock,
+    },
+    { to: "/recruiter/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/messages", label: "Messages", icon: MessageSquare },
+  ],
+  admin: [
+    { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/manage-users", label: "Manage Users", icon: Users },
+    { to: "/admin/recruiters", label: "Recruiters", icon: Building2 },
+    {
+      to: "/admin/company-verification",
+      label: "Company Verification",
+      icon: ShieldCheck,
+    },
+    { to: "/admin/job-moderation", label: "Job Moderation", icon: ListChecks },
+    {
+      to: "/admin/platform-analytics",
+      label: "Platform Analytics",
+      icon: BarChart3,
+    },
+    { to: "/admin/reports", label: "Reports", icon: FileBarChart },
+    { to: "/admin/feedback", label: "Feedback", icon: MessageCircle },
+    { to: "/admin/system-health", label: "System Health", icon: HeartPulse },
+    { to: "/admin/database-status", label: "Database Status", icon: Database },
+    { to: "/admin/system-settings", label: "System Settings", icon: Cog },
+  ],
+};
+
+export const COMMON_NAV = [
+  { to: "/settings", label: "Settings", icon: Settings },
+];
