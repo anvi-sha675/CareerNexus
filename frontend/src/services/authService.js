@@ -1,24 +1,32 @@
 import api from "./api";
-import { withFallback, wait } from "./helpers";
+import { withFallback } from "./helpers";
 import { mockUsers } from "./mock/mockData";
 
-export async function login({ email, role = "student" }) {
-  return withFallback(
-    () => api.post("/auth/login", { email }),
+function normalizeAuthResult(result) {
+  if (!result) return result;
+  const token = result.token || result.accessToken;
+  return { user: result.user, token, refreshToken: result.refreshToken };
+}
+
+export async function login({ email, password, role = "student" }) {
+  const result = await withFallback(
+    () => api.post("/auth/login", { email, password }),
     {
       user: { ...mockUsers[role], email: email || mockUsers[role].email },
       token: `demo-token-${role}`,
     },
     600,
   );
+  return normalizeAuthResult(result);
 }
 
-export async function register({ name, email, role }) {
-  return withFallback(
-    () => api.post("/auth/register", { name, email, role }),
+export async function register({ name, email, password, role }) {
+  const result = await withFallback(
+    () => api.post("/auth/register", { name, email, password, role }),
     { user: { ...mockUsers[role], name, email }, token: `demo-token-${role}` },
     700,
   );
+  return normalizeAuthResult(result);
 }
 
 export async function forgotPassword(email) {
@@ -37,7 +45,10 @@ export async function resetPassword({ token, password }) {
   );
 }
 
-export async function verifyEmail(_token) {
-  await wait(900);
-  return { verified: true };
+export async function verifyEmail(token) {
+  return withFallback(
+    () => api.post("/auth/verify-email", { token }),
+    { verified: true },
+    900,
+  );
 }

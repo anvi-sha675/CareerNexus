@@ -11,7 +11,7 @@ export default function VerifyEmail() {
   useEffect(() => {
     let mounted = true;
     authService
-      .verifyEmail(searchParams.get("token") || "demo")
+      .verifyEmail(searchParams.get("token") || "")
       .then(() => mounted && setStatus("success"))
       .catch(() => mounted && setStatus("error"));
     return () => {

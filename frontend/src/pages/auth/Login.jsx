@@ -26,7 +26,7 @@ export default function Login() {
   const onSubmit = async (values) => {
     setLoading(true);
     try {
-      const user = await login(values.email, values.role);
+      const user = await login(values.email, values.password, values.role);
       showToast(`Welcome back, ${user.name.split(" ")[0]}!`, {
         type: "success",
       });

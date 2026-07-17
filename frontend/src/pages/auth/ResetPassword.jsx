@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { Lock } from "lucide-react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { Lock, AlertTriangle } from "lucide-react";
 import TextField from "../../components/forms/TextField";
 import PasswordStrengthMeter from "../../components/forms/PasswordStrengthMeter";
 import Button from "../../components/common/Button";
@@ -18,20 +18,38 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
   const password = watch("password");
 
   const onSubmit = async (values) => {
     setLoading(true);
-    await authService.resetPassword({
-      token: "demo",
-      password: values.password,
-    });
+    await authService.resetPassword({ token, password: values.password });
     setLoading(false);
     showToast("Password reset successfully. Please log in.", {
       type: "success",
     });
     navigate("/login");
   };
+
+  if (!token) {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-warning dark:bg-amber-500/10">
+          <AlertTriangle className="h-7 w-7" />
+        </div>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+          Invalid or missing reset link
+        </h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          This page needs a valid reset token from the link in your email.
+        </p>
+        <Link to="/forgot-password" className="mt-6 inline-block">
+          <Button variant="secondary">Request a new link</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
