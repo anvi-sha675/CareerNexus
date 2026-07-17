@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Plus, X, Save, ArrowRight } from "lucide-react";
+import { Save, ArrowRight } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
 import Card from "../../components/common/Card";
 import Avatar from "../../components/common/Avatar";
@@ -9,43 +9,57 @@ import TextField from "../../components/forms/TextField";
 import TextareaField from "../../components/forms/TextareaField";
 import Button from "../../components/common/Button";
 import Badge from "../../components/common/Badge";
+import Spinner from "../../components/common/Spinner";
 import ProfileCompletionWidget from "../../components/profile/ProfileCompletionWidget";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import { useAsync } from "../../hooks/useAsync";
+import * as studentProfileService from "../../services/studentProfileService";
+import {
+  skillsService,
+  projectsService,
+} from "../../services/studentProfileService";
 
 export default function StudentProfile() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile: updateLocalUser } = useAuth();
   const { showToast } = useToast();
-  const [skills, setSkills] = useState([
-    "React",
-    "Node.js",
-    "Python",
-    "MongoDB",
-    "Tailwind CSS",
-  ]);
-  const [skillInput, setSkillInput] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  const { register, handleSubmit } = useForm({
-    defaultValues: {
-      name: user?.name || "",
-      headline: user?.headline || "",
-      college: user?.college || "",
-      bio: "Aspiring full-stack developer passionate about building AI-powered products that solve real problems.",
-    },
+  const { data: profile, loading: profileLoading } = useAsync(
+    studentProfileService.getProfile,
+    [],
+  );
+  const { data: skills, loading: skillsLoading } = useAsync(
+    skillsService.list,
+    [],
+  );
+  const { data: projects, loading: projectsLoading } = useAsync(
+    projectsService.list,
+    [],
+  );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm({
+    defaultValues: { headline: "", college: "", bio: "", location: "" },
   });
 
-  const addSkill = () => {
-    const value = skillInput.trim();
-    if (value && !skills.includes(value)) setSkills([...skills, value]);
-    setSkillInput("");
-  };
+  useEffect(() => {
+    if (profile) {
+      reset({
+        headline: profile.headline || "",
+        college: profile.college || "",
+        bio: profile.bio || "",
+        location: profile.location || "",
+      });
+    }
+  }, [profile, reset]);
 
   const onSubmit = async (values) => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    updateProfile(values);
-    setSaving(false);
+    await studentProfileService.updateProfile(values);
+    updateLocalUser({ headline: values.headline });
     showToast("Profile updated successfully.", { type: "success" });
   };
 
@@ -99,98 +113,123 @@ export default function StudentProfile() {
             <h3 className="mb-4 text-sm font-semibold text-slate-800 dark:text-slate-100">
               Basic information
             </h3>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <TextField label="Full name" {...register("name")} />
-                <TextField
-                  label="College / University"
-                  {...register("college")}
-                />
-              </div>
-              <TextField
-                label="Headline"
-                {...register("headline")}
-                placeholder="e.g. Final Year CS Student"
-              />
-              <TextareaField label="Bio" rows={4} {...register("bio")} />
-              <Button type="submit" icon={Save} loading={saving}>
-                Save changes
-              </Button>
-            </form>
-          </Card>
-
-          <Card>
-            <h3 className="mb-4 text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Skills
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400"
-                >
-                  {skill}
-                  <button
-                    onClick={() => setSkills(skills.filter((s) => s !== skill))}
-                    aria-label={`Remove ${skill}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="mt-4 flex gap-2">
-              <TextField
-                placeholder="Add a skill..."
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addSkill())
-                }
-                className="flex-1"
-              />
-              <Button
-                variant="secondary"
-                icon={Plus}
-                onClick={addSkill}
-                type="button"
-              >
-                Add
-              </Button>
-            </div>
-          </Card>
-
-          <Card>
-            <h3 className="mb-4 text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Projects
-            </h3>
-            <div className="space-y-4">
-              {[
-                { title: "Advisory", desc: "Full-stack app" },
-                { title: "System", desc: "App" },
-              ].map((p) => (
-                <div
-                  key={p.title}
-                  className="rounded-xl border border-slate-100 p-4 dark:border-slate-700"
-                >
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    {p.title}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {p.desc}
-                  </p>
+            {profileLoading ? (
+              <Spinner />
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextField
+                    label="College / University"
+                    {...register("college")}
+                  />
+                  <TextField
+                    label="Location"
+                    {...register("location")}
+                    placeholder="e.g. Jaipur, India"
+                  />
                 </div>
-              ))}
+                <TextField
+                  label="Headline"
+                  {...register("headline")}
+                  placeholder="e.g. Final Year CS Student"
+                />
+                <TextareaField label="Bio" rows={4} {...register("bio")} />
+                <Button type="submit" icon={Save} loading={isSubmitting}>
+                  Save changes
+                </Button>
+              </form>
+            )}
+          </Card>
+
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Skills
+              </h3>
+              <Link
+                to="/student/skills"
+                className="text-xs font-medium text-primary-600 hover:underline"
+              >
+                Manage
+              </Link>
             </div>
-            <Button variant="ghost" size="sm" icon={Plus} className="mt-3">
-              Add project
-            </Button>
+            {skillsLoading ? (
+              <Spinner />
+            ) : skills?.length ? (
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <span
+                    key={skill.id}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400"
+                  >
+                    {skill.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">
+                No skills added yet —{" "}
+                <Link
+                  to="/student/skills"
+                  className="text-primary-600 hover:underline"
+                >
+                  add some
+                </Link>
+                .
+              </p>
+            )}
+          </Card>
+
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Projects
+              </h3>
+              <Link
+                to="/student/projects"
+                className="text-xs font-medium text-primary-600 hover:underline"
+              >
+                Manage
+              </Link>
+            </div>
+            {projectsLoading ? (
+              <Spinner />
+            ) : projects?.length ? (
+              <div className="space-y-4">
+                {projects.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded-xl border border-slate-100 p-4 dark:border-slate-700"
+                  >
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      {p.title}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {p.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">
+                No projects added yet —{" "}
+                <Link
+                  to="/student/projects"
+                  className="text-primary-600 hover:underline"
+                >
+                  add one
+                </Link>
+                .
+              </p>
+            )}
           </Card>
         </div>
 
         <div className="space-y-6">
           <ProfileCompletionWidget
-            percentage={user?.profileCompletion || 78}
+            percentage={
+              profile?.profileCompletion ?? user?.profileCompletion ?? 0
+            }
             tasks={["Add a certification", "Verify phone number"]}
           />
           <Card>
@@ -199,14 +238,20 @@ export default function StudentProfile() {
             </h3>
             <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
               <p className="flex justify-between">
-                <span>Job type</span> <Badge>Full-time</Badge>
+                <span>Job type</span>{" "}
+                <Badge>{profile?.preferredJobType || "Full-time"}</Badge>
               </p>
               <p className="flex justify-between">
-                <span>Work mode</span> <Badge tone="Active">Remote</Badge>
+                <span>Work mode</span>{" "}
+                <Badge tone="Active">
+                  {profile?.preferredWorkMode || "Remote"}
+                </Badge>
               </p>
               <p className="flex justify-between">
-                <span>Experience</span>{" "}
-                <span className="text-slate-400">Entry Level</span>
+                <span>Availability</span>{" "}
+                <span className="text-slate-400">
+                  {profile?.availability || "Immediately"}
+                </span>
               </p>
             </div>
           </Card>
