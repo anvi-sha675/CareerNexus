@@ -35,7 +35,7 @@ export default function CommandPalette() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[110] flex items-start justify-center pt-24"
+      className="fixed inset-0 z-110 flex items-start justify-center pt-24"
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"

@@ -9,16 +9,24 @@ import {
 
 export async function getRecruiterAnalytics() {
   return withFallback(
-    () => api.get("/analytics/recruiter"),
+    () => api.get("/recruiter/analytics"),
     { applicationsTrend, pipelineData },
     500,
   );
 }
 
 export async function getPlatformAnalytics() {
-  return withFallback(
-    () => api.get("/analytics/platform"),
+  const data = await withFallback(
+    () => api.get("/admin/analytics"),
     { revenueByMonth, applicationsTrend, userDistribution, pipelineData },
     500,
   );
+  if (data && data.hiringFunnel && !data.pipelineData) {
+    return {
+      ...data,
+      pipelineData: data.hiringFunnel,
+      revenueByMonth: data.revenueByMonth || [],
+    };
+  }
+  return data;
 }

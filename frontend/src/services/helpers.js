@@ -9,6 +9,13 @@ function looksLikeRealData(data) {
   return true;
 }
 
+function unwrapEnvelope(body) {
+  if (body && typeof body === "object" && "success" in body && "data" in body) {
+    return body.data;
+  }
+  return body;
+}
+
 export async function withFallback(apiCall, mockValue, delay = 500) {
   if (!HAS_REAL_BACKEND) {
     await wait(delay);
@@ -18,9 +25,31 @@ export async function withFallback(apiCall, mockValue, delay = 500) {
     const res = await apiCall();
     if (!looksLikeRealData(res.data))
       throw new Error("Unexpected response shape");
-    return res.data;
+    return unwrapEnvelope(res.data);
   } catch {
     await wait(delay);
     return mockValue;
+  }
+}
+
+export async function withFallbackPaginated(apiCall, mockValue, delay = 500) {
+  if (!HAS_REAL_BACKEND) {
+    await wait(delay);
+    return { items: mockValue, meta: null };
+  }
+  try {
+    const res = await apiCall();
+    if (!looksLikeRealData(res.data))
+      throw new Error("Unexpected response shape");
+    const body = res.data;
+    const isEnvelope =
+      body && typeof body === "object" && "success" in body && "data" in body;
+    return {
+      items: isEnvelope ? body.data : body,
+      meta: isEnvelope ? body.meta || null : null,
+    };
+  } catch {
+    await wait(delay);
+    return { items: mockValue, meta: null };
   }
 }
