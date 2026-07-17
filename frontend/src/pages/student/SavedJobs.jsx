@@ -1,19 +1,25 @@
-import { useState } from "react";
 import { Bookmark } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
 import JobCard from "../../components/jobs/JobCard";
 import EmptyState from "../../components/common/EmptyState";
 import { CardSkeleton } from "../../components/common/Skeleton";
 import { useAsync } from "../../hooks/useAsync";
-import * as jobsService from "../../services/jobsService";
+import * as studentProfileService from "../../services/studentProfileService";
+import { useToast } from "../../context/ToastContext";
 
 export default function SavedJobs() {
-  const { data: jobs, loading } = useAsync(jobsService.getJobs, []);
-  const [savedIds, setSavedIds] = useState(["j1", "j3", "j8"]);
+  const {
+    data: savedJobs,
+    loading,
+    setData,
+  } = useAsync(studentProfileService.listSavedJobs, []);
+  const { showToast } = useToast();
 
-  const savedJobs = (jobs || []).filter((j) => savedIds.includes(j.id));
-  const toggleSave = (id) =>
-    setSavedIds((prev) => prev.filter((i) => i !== id));
+  const handleUnsave = async (jobId) => {
+    await studentProfileService.unsaveJob(jobId);
+    setData((prev) => prev.filter((j) => j.id !== jobId));
+    showToast("Removed from saved jobs.", { type: "success" });
+  };
 
   return (
     <div>
@@ -28,7 +34,7 @@ export default function SavedJobs() {
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : savedJobs.length === 0 ? (
+      ) : !savedJobs?.length ? (
         <EmptyState
           icon={Bookmark}
           title="No saved jobs yet"
@@ -37,7 +43,7 @@ export default function SavedJobs() {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
           {savedJobs.map((job) => (
-            <JobCard key={job.id} job={job} saved onSave={toggleSave} />
+            <JobCard key={job.id} job={job} saved onSave={handleUnsave} />
           ))}
         </div>
       )}

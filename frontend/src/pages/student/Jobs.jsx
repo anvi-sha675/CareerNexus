@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, SearchX } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
 import SearchInput from "../../components/common/SearchInput";
@@ -13,7 +13,9 @@ import Drawer from "../../components/common/Drawer";
 import { useAsync } from "../../hooks/useAsync";
 import { useDebounce } from "../../hooks/useDebounce";
 import { usePagination } from "../../hooks/usePagination";
+import { useAuth } from "../../context/AuthContext";
 import * as jobsService from "../../services/jobsService";
+import * as studentProfileService from "../../services/studentProfileService";
 
 const SORT_OPTIONS = [
   { value: "match", label: "Best match" },
@@ -22,6 +24,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function Jobs() {
+  const { user } = useAuth();
+  const isStudent = user?.role === "student";
   const { data: jobs, loading } = useAsync(jobsService.getJobs, []);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
@@ -33,6 +37,13 @@ export default function Jobs() {
   const [sort, setSort] = useState("match");
   const [savedIds, setSavedIds] = useState([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isStudent) return;
+    studentProfileService
+      .listSavedJobs()
+      .then((jobs) => setSavedIds(jobs.map((j) => j.id)));
+  }, [isStudent]);
 
   const filtered = useMemo(() => {
     let result = (jobs || []).filter((job) => job.status === "Active");
@@ -62,10 +73,15 @@ export default function Jobs() {
 
   const { page, setPage, totalPages, pageItems } = usePagination(filtered, 6);
 
-  const toggleSave = (id) =>
+  const toggleSave = (id) => {
+    const isSaved = savedIds.includes(id);
     setSavedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+      isSaved ? prev.filter((i) => i !== id) : [...prev, id],
     );
+    if (!isStudent) return;
+    if (isSaved) studentProfileService.unsaveJob(id);
+    else studentProfileService.saveJob(id);
+  };
   const resetFilters = () =>
     setFilters({ type: [], experience: [], remote: false });
 
