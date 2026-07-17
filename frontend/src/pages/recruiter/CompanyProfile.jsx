@@ -95,12 +95,12 @@ export default function CompanyProfile() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Card padding="p-0" className="overflow-hidden">
-            <div className="relative h-36 bg-linear-to-r from-primary-500 to-accent">
+            <div className="relative h-36 overflow-hidden bg-linear-to-r from-primary-500 to-accent">
               {coverFile && (
                 <img
                   src={URL.createObjectURL(coverFile)}
                   alt="Cover"
-                  className="h-full w-full object-cover"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
               <label className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-1.5 rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-white">
