@@ -1,0 +1,15 @@
+node_modules
+.env
+logs/*.log
+uploads/resumes/*
+uploads/avatars/*
+uploads/logos/*
+uploads/covers/*
+uploads/gallery/*
+!uploads/resumes/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/logos/.gitkeep
+!uploads/covers/.gitkeep
+!uploads/gallery/.gitkeep
+coverage
+.DS_Store

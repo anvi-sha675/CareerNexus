@@ -1,0 +1,54 @@
+{
+  "name": "careernexus-backend",
+  "version": "1.0.0",
+  "description": "CareerNexus production backend — Node.js/Express/MongoDB API powering the CareerNexus hiring platform.",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node database/seed.js",
+    "seed:destroy": "node database/seed.js --destroy",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --runInBand --detectOpenHandles",
+    "test:watch": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --watch --runInBand",
+    "test:unit": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest tests/unit --runInBand",
+    "test:integration": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest tests/integration --runInBand --detectOpenHandles"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "mammoth": "^1.12.0",
+    "mongoose": "^9.7.4",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  },
+  "keywords": [
+    "careernexus",
+    "hiring",
+    "saas",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC"
+}
